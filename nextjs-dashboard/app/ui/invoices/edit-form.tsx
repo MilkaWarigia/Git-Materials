@@ -9,6 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
+import { updateInvoice, State } from '@/app/lib/actions';
+import { useState } from 'react';
 
 export default function EditInvoiceForm({
   invoice,
@@ -17,8 +19,29 @@ export default function EditInvoiceForm({
   invoice: InvoiceForm;
   customers: CustomerField[];
 }) {
+  const initialState: State = { message: null, errors: {} };
+  const [state, setState] = useState<State>(initialState);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const response = await updateInvoice(invoice.id, formData);
+
+    if (response.errors) {
+      setState({
+        ...state,
+        errors: response.errors,
+        message: response.message,
+      });
+    } else {
+      setState({ ...state, message: 'Invoice updated successfully' });
+    }
+  };
+
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
+      <input type="hidden" name="id" value={invoice.id} />
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
